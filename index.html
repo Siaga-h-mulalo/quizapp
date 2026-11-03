@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>ProQuiz - Social Learning</title>
+<link rel="icon" href="favicon.jpeg" type="image/jpeg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================== DESIGN TOKENS ============================== */
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-hover: #f1f5f9;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --primary: #1e3a8a; /* Deep Blue */
+  --primary-hover: #1e40af;
+  --primary-light: #e0e7ff;
+  --accent: #3b82f6;
+  --border: #e2e8f0;
+  --success: #10b981;
+  --success-bg: #d1fae5;
+  --danger: #ef4444;
+  --danger-bg: #fee2e2;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 25px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --font: 'Manrope', system-ui, -apple-system, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface-hover: #334155;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --primary: #3b82f6;
+    --primary-hover: #60a5fa;
+    --primary-light: #1e3a8a;
+    --border: #334155;
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text-main); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; transition: background 0.3s, color 0.3s; }
+a { color: var(--primary); text-decoration: none; cursor: pointer; font-weight: 600; transition: color 0.2s; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; transition: all 0.2s ease; }
+input, select, textarea { font-family: inherit; font-size: 15px; color: var(--text-main); }
+
+/* ============================== UTILITIES ============================== */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; border-radius: var(--radius-md); font-weight: 700; font-size: 15px; border: 1px solid transparent; }
+.btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2); }
+.btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(30, 58, 138, 0.3); }
+.btn-secondary { background: var(--surface); border-color: var(--border); color: var(--text-main); box-shadow: var(--shadow-sm); }
+.btn-secondary:hover { background: var(--surface-hover); transform: translateY(-2px); }
+.btn-block { width: 100%; }
+.btn-sm { padding: 8px 16px; font-size: 13px; border-radius: var(--radius-sm); }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.form-group { margin-bottom: 20px; }
+.form-label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--text-main); }
+.form-control { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: var(--radius-md); outline: none; background: var(--surface); transition: 0.2s; color: var(--text-main); }
+.form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-light); }
+
+.badge { display: inline-flex; align-items: center; padding: 6px 12px; border-radius: var(--radius-full); font-size: 12px; font-weight: 800; letter-spacing: 0.3px; }
+.badge-primary { background: var(--primary-light); color: var(--primary); }
+.badge-success { background: var(--success-bg); color: var(--success); }
+.badge-easy { background: #dcfce7; color: #166534; }
+.badge-medium { background: #fef9c3; color: #854d0e; }
+.badge-hard { background: #fee2e2; color: #991b1b; }
+
+.alert { padding: 14px 18px; border-radius: var(--radius-md); font-size: 14px; margin-bottom: 20px; display: none; font-weight: 600; line-height: 1.4; }
+.alert-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid #fca5a5; }
+
+/* ============================== LANDING PAGE ============================== */
+.landing-nav { position: fixed; top: 0; left: 0; right: 0; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; background: rgba(248, 250, 252, 0.8); backdrop-filter: blur(12px); z-index: 100; border-bottom: 1px solid var(--border); }
+@media (prefers-color-scheme: dark) { .landing-nav { background: rgba(15, 23, 42, 0.8); } }
+.landing-brand { display: flex; align-items: center; gap: 12px; font-size: 24px; font-weight: 800; color: var(--text-main); }
+.landing-brand-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: var(--radius-md); display: grid; place-items: center; color: white; font-size: 22px; }
+.landing-nav-links { display: flex; gap: 32px; }
+.landing-nav-links a { color: var(--text-muted); font-size: 15px; }
+.landing-nav-links a:hover { color: var(--primary); }
+.landing-nav-actions { display: flex; gap: 16px; }
+
+.hero { position: relative; min-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 160px 20px 80px; background-image: url('cover.jpeg'); background-size: cover; background-position: center; background-attachment: fixed; }
+.hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.85)); z-index: 0; }
+.hero-content { position: relative; z-index: 10; max-width: 900px; }
+.hero-badge { margin-bottom: 24px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 8px 20px; border-radius: var(--radius-full); font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; color: white; backdrop-filter: blur(4px); }
+.hero-badge span { color: #10b981; }
+.hero h1 { font-size: 68px; font-weight: 800; line-height: 1.1; letter-spacing: -2px; margin-bottom: 24px; color: white; text-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.hero h1 span { color: var(--accent); }
+.hero p { font-size: 20px; color: #e2e8f0; max-width: 650px; margin: 0 auto 48px; line-height: 1.6; }
+.hero-actions { display: flex; gap: 16px; justify-content: center; }
+.hero-actions .btn-primary { background: var(--accent); box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4); }
+.hero-actions .btn-primary:hover { background: #2563eb; transform: translateY(-3px) scale(1.02); }
+.hero-actions .btn-secondary { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: white; backdrop-filter: blur(4px); }
+.hero-actions .btn-secondary:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-3px) scale(1.02); }
+
+.features { padding: 100px 40px; max-width: 1200px; margin: 0 auto; background: var(--bg); position: relative; z-index: 10; }
+.section-header { text-align: center; margin-bottom: 64px; }
+.section-header h2 { font-size: 40px; font-weight: 800; letter-spacing: -1px; margin-bottom: 16px; }
+.section-header p { font-size: 18px; color: var(--text-muted); max-width: 600px; margin: 0 auto; }
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; }
+.feature-card { background: var(--surface); padding: 40px; border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); transition: transform 0.3s, box-shadow 0.3s; }
+.feature-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
+.feature-icon { width: 56px; height: 56px; border-radius: var(--radius-md); background: var(--primary-light); color: var(--primary); display: grid; place-items: center; margin-bottom: 24px; }
+.feature-icon svg { width: 28px; height: 28px; }
+.feature-card h3 { font-size: 22px; font-weight: 800; margin-bottom: 12px; }
+.feature-card p { font-size: 15px; color: var(--text-muted); line-height: 1.6; }
+
+.how-it-works { background: var(--surface); padding: 100px 40px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; max-width: 1000px; margin: 0 auto; text-align: center; }
+.step-num { width: 48px; height: 48px; border-radius: 50%; background: var(--primary); color: white; display: grid; place-items: center; font-size: 20px; font-weight: 800; margin: 0 auto 24px; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3); }
+.step h3 { font-size: 20px; font-weight: 800; margin-bottom: 12px; }
+.step p { font-size: 15px; color: var(--text-muted); }
+
+.landing-footer { padding: 60px 40px; background: var(--surface); border-top: 1px solid var(--border); text-align: center; }
+.landing-footer p { color: var(--text-muted); font-size: 14px; }
+
+/* ============================== AUTHENTICATION PAGES ============================== */
+.auth-split { display: flex; min-height: 100vh; background: var(--surface); }
+.auth-cover { flex: 1; display: none; background-image: url('cover.jpeg'); background-size: cover; background-position: center; position: relative; }
+.auth-cover::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(30, 58, 138, 0.85), rgba(15, 23, 42, 0.95)); }
+.auth-cover-content { position: relative; z-index: 10; color: white; height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 80px; }
+.auth-cover-content h1 { font-size: 48px; font-weight: 800; line-height: 1.1; margin-bottom: 24px; letter-spacing: -1.5px; }
+.auth-cover-content p { font-size: 18px; color: #e2e8f0; max-width: 400px; line-height: 1.6; margin-bottom: 48px; }
+.auth-cover-features { display: flex; flex-direction: column; gap: 20px; }
+.auth-cover-feature { display: flex; align-items: center; gap: 16px; font-size: 16px; font-weight: 600; }
+.auth-cover-feature svg { width: 24px; height: 24px; color: var(--accent); }
+
+.auth-form-side { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; background: var(--surface); position: relative; }
+.auth-form-container { width: 100%; max-width: 420px; position: relative; }
+.back-btn { position: absolute; top: -40px; left: 0; color: var(--text-muted); display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+.back-btn:hover { color: var(--primary); }
+
+.auth-header { margin-bottom: 32px; }
+.auth-header h2 { font-size: 32px; font-weight: 800; margin-bottom: 8px; color: var(--text-main); letter-spacing: -0.5px; }
+.auth-header p { color: var(--text-muted); font-size: 15px; }
+
+.input-group { position: relative; margin-bottom: 20px; }
+.input-group label { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 15px; color: var(--text-muted); pointer-events: none; transition: all 0.2s ease; background: var(--surface); padding: 0 4px; }
+.input-group input { width: 100%; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius-md); background: transparent; outline: none; font-size: 15px; font-weight: 500; color: var(--text-main); transition: all 0.2s ease; }
+.input-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-light); }
+.input-group input:focus ~ label, .input-group input:not(:placeholder-shown) ~ label { top: 0; font-size: 12px; color: var(--primary); font-weight: 700; }
+
+.auth-submit-btn { width: 100%; padding: 16px; background: var(--primary); color: white; border-radius: var(--radius-md); font-size: 16px; font-weight: 700; margin-top: 8px; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2); }
+.auth-submit-btn:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(30, 58, 138, 0.3); }
+
+.auth-divider { display: flex; align-items: center; text-align: center; color: var(--text-muted); font-size: 13px; margin: 24px 0; font-weight: 600; }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border); }
+.auth-divider::before { margin-right: 16px; }
+.auth-divider::after { margin-left: 16px; }
+
+.google-login-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); font-weight: 700; font-size: 15px; color: var(--text-main); box-shadow: var(--shadow-sm); }
+.google-login-btn:hover { background: var(--surface-hover); border-color: #cbd5e1; }
+.google-login-btn svg { width: 20px; height: 20px; }
+
+.auth-footer { text-align: center; margin-top: 32px; font-size: 15px; color: var(--text-muted); font-weight: 500; }
+.auth-footer a { font-weight: 700; }
+
+@media (min-width: 900px) { .auth-cover { display: block; } }
+
+/* ============================== MAIN LAYOUT ============================== */
+.app-layout { display: flex; min-height: 100vh; max-width: 1500px; margin: 0 auto; }
+.sidebar-left { width: 260px; position: fixed; height: 100vh; padding: 24px 16px; border-right: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; z-index: 50; }
+.main-feed { flex: 1; margin-left: 260px; margin-right: 340px; padding: 32px 40px; min-height: 100vh; }
+.sidebar-right { width: 340px; position: fixed; right: 0; height: 100vh; padding: 32px 24px; background: var(--bg); overflow-y: auto; border-left: 1px solid var(--border); z-index: 40; }
+
+/* Navigation */
+.brand { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; padding: 0 8px; }
+.brand-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: var(--radius-md); display: grid; place-items: center; color: white; font-size: 20px; font-weight: 800; }
+.nav-item { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: var(--radius-md); font-weight: 700; font-size: 15px; color: var(--text-muted); margin-bottom: 4px; width: 100%; text-align: left; }
+.nav-item:hover { background: var(--surface-hover); color: var(--text-main); }
+.nav-item.active { color: var(--primary); background: var(--primary-light); }
+.nav-icon { width: 24px; height: 24px; display: grid; place-items: center; }
+
+.user-nav-card { margin-top: auto; padding-top: 24px; border-top: 1px solid var(--border); }
+.user-nav-profile { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: var(--radius-md); cursor: pointer; }
+.user-nav-profile:hover { background: var(--surface-hover); }
+
+/* Composer */
+.composer { background: var(--surface); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 32px; }
+.composer-top { display: flex; gap: 16px; margin-bottom: 16px; align-items: center; }
+.composer-input { flex: 1; background: var(--bg); border-radius: var(--radius-full); padding: 12px 20px; text-align: left; color: var(--text-muted); font-weight: 600; font-size: 15px; border: none; cursor: text; transition: background 0.2s; }
+.composer-input:hover { background: var(--surface-hover); }
+.composer-actions { display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 16px; }
+.composer-btn { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: var(--radius-md); font-weight: 700; color: var(--text-muted); font-size: 14px; }
+.composer-btn:hover { background: var(--surface-hover); color: var(--text-main); }
+
+/* Post Cards */
+.post { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 24px; overflow: hidden; transition: box-shadow 0.2s; }
+.post:hover { box-shadow: var(--shadow-md); }
+.post-header { padding: 20px 20px 16px; display: flex; align-items: center; gap: 12px; }
+.post-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+.post-meta h4 { font-size: 15px; font-weight: 800; color: var(--text-main); margin: 0; }
+.post-meta span { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+.post-content { padding: 0 20px 20px; font-size: 15px; color: var(--text-main); line-height: 1.6; font-weight: 500; }
+.post-media { width: 100%; max-height: 450px; object-fit: contain; background: #000; }
+.post-actions { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; gap: 24px; }
+.post-action-btn { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--text-muted); padding: 8px 12px; border-radius: var(--radius-md); font-size: 14px; }
+.post-action-btn:hover { background: var(--surface-hover); color: var(--text-main); }
+.post-action-btn.liked { color: var(--danger); }
+
+/* Quiz Attachment */
+.quiz-attachment { margin: 0 20px 20px; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; background: linear-gradient(to bottom right, var(--bg), var(--surface)); }
+.quiz-attachment-header { display: flex; justify-content: space-between; margin-bottom: 16px; }
+.quiz-attachment h3 { font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 6px; }
+
+/* Quiz Choices */
+.quiz-choice { display: flex; align-items: center; gap: 12px; padding: 16px; border: 2px solid var(--border); border-radius: var(--radius-md); margin-bottom: 12px; cursor: pointer; transition: all 0.2s; font-weight: 600; background: var(--surface); }
+.quiz-choice:hover { border-color: var(--primary); background: var(--primary-light); }
+.quiz-choice input[type="radio"] { width: 20px; height: 20px; accent-color: var(--primary); }
+
+/* Comments */
+.comments-section { display: none; padding: 20px; border-top: 1px solid var(--border); background: var(--bg); }
+.comments-section.active { display: block; }
+.comment { display: flex; gap: 12px; margin-bottom: 16px; }
+.comment-bubble { background: var(--surface); border: 1px solid var(--border); padding: 10px 16px; border-radius: var(--radius-md); flex: 1; }
+.comment-bubble h5 { font-size: 13px; font-weight: 800; margin-bottom: 4px; color: var(--text-main); }
+.comment-bubble p { font-size: 14px; color: var(--text-main); font-weight: 500; }
+.comment-input-wrap { display: flex; gap: 12px; margin-top: 20px; }
+.comment-input { flex: 1; border: 1px solid var(--border); border-radius: var(--radius-full); padding: 10px 16px; outline: none; background: var(--surface); transition: 0.2s; }
+.comment-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+
+/* Right Sidebar */
+.side-card { background: var(--surface); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 24px; }
+.side-card h3 { font-size: 15px; font-weight: 800; margin-bottom: 16px; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px; }
+
+.lb-row { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid var(--border); }
+.lb-row:last-child { border-bottom: none; }
+.lb-rank { font-weight: 800; font-size: 16px; width: 24px; color: var(--text-muted); }
+.lb-name { flex: 1; font-weight: 700; font-size: 14px; }
+.lb-score { font-weight: 800; color: var(--primary); }
+
+/* ============================== INBOX & CHAT ============================== */
+.inbox-drawer { position: fixed; top: 0; right: -400px; width: 400px; height: 100vh; background: var(--surface); box-shadow: -10px 0 30px rgba(0,0,0,0.1); z-index: 1000; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; border-left: 1px solid var(--border); }
+.inbox-drawer.open { right: 0; }
+.inbox-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg); }
+.inbox-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+
+/* Chat List */
+.chat-user-row { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s; }
+.chat-user-row:hover { background: var(--surface-hover); }
+.chat-user-row.active { background: var(--primary-light); }
+.presence-dot { width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; position: absolute; bottom: 0; right: 0; border: 2px solid var(--surface); }
+.presence-dot.online { background: var(--success); }
+
+/* Chat Messages */
+.chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: var(--bg); }
+.msg-bubble { max-width: 80%; padding: 12px 16px; border-radius: 16px; font-size: 14px; font-weight: 500; line-height: 1.4; }
+.msg-sent { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+.msg-received { align-self: flex-start; background: var(--surface); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+.chat-input-area { padding: 16px; border-top: 1px solid var(--border); display: flex; gap: 12px; background: var(--surface); }
+.chat-input { flex: 1; border: 1px solid var(--border); border-radius: 20px; padding: 10px 16px; outline: none; background: var(--bg); }
+
+/* Modals */
+.modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px); }
+.modal { background: var(--surface); border-radius: var(--radius-lg); width: 100%; max-width: 500px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+.modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.modal-body { padding: 24px; overflow-y: auto; }
+.modal-footer { padding: 20px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; }
+
+/* Media Recording */
+.recording-ui { background: var(--bg); border: 2px dashed var(--primary); padding: 24px; border-radius: var(--radius-md); text-align: center; margin-bottom: 16px; }
+.recording-ui.active { background: var(--danger-bg); border-color: var(--danger); }
+.mic-btn { width: 64px; height: 64px; border-radius: 50%; background: var(--danger); color: white; display: grid; place-items: center; margin: 0 auto 16px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+.mic-btn:hover { transform: scale(1.05); }
+
+.toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--text-main); color: var(--bg); padding: 14px 24px; border-radius: var(--radius-full); font-weight: 700; font-size: 14px; z-index: 2000; transition: 0.3s; opacity: 0; box-shadow: var(--shadow-lg); }
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+.loading-screen { position: fixed; inset: 0; background: var(--bg); display: grid; place-items: center; z-index: 9999; }
+.spinner { width: 48px; height: 48px; border: 4px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Mobile FAB */
+.mobile-fab { display: none; position: fixed; bottom: 80px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: white; z-index: 99; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.4); align-items: center; justify-content: center; }
+
+.mobile-nav { display: none; }
+
+@media (max-width: 1024px) {
+  .sidebar-right { display: none; }
+  .main-feed { margin-right: 0; }
+  .hero h1 { font-size: 48px; }
+  .steps-grid { grid-template-columns: 1fr; gap: 48px; }
+  .inbox-drawer { width: 100%; right: -100%; }
+}
+
+@media (max-width: 768px) {
+  .app-layout { flex-direction: column; }
+  .sidebar-left { display: none; }
+  .main-feed { margin-left: 0; padding: 20px 20px 100px 20px; }
+  
+  .landing-nav { padding: 16px 20px; }
+  .landing-nav-links { display: none; }
+  .hero { padding: 140px 20px 60px; }
+  .hero h1 { font-size: 36px; }
+  .hero p { font-size: 16px; }
+  .hero-actions { flex-direction: column; }
+  .features { padding: 60px 20px; }
+  .section-header h2 { font-size: 28px; }
+
+  .auth-form-side { padding: 20px; }
+  .auth-form-container { margin-top: 40px; }
+  .back-btn { top: -30px; }
+
+  .mobile-fab { display: flex; }
+  
+  .mobile-nav { 
+    display: flex; 
+    position: fixed; 
+    bottom: 0; 
+    left: 0; 
+    right: 0; 
+    background: var(--surface); 
+    border-top: 1px solid var(--border); 
+    padding: 8px 16px; 
+    justify-content: space-around; 
+    z-index: 100;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+  }
+  .mobile-nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    color: var(--text-muted); font-size: 11px; font-weight: 700;
+  }
+  .mobile-nav-item.active { color: var(--primary); }
+  .mobile-nav-item svg { width: 24px; height: 24px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="loading-screen"><div class="spinner"></div></div>
+</div>
+
+<script type="module">
+/* ================================================================
+   1. FIREBASE SETUP
+   ================================================================ */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, where, arrayUnion, arrayRemove, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAttewAqdxRTCby6YNAXWvOK6UhOz4cAMM",
+  authDomain: "quiz-f28c3.firebaseapp.com",
+  projectId: "quiz-f28c3",
+  storageBucket: "quiz-f28c3.firebasestorage.app",
+  messagingSenderId: "1014344456091",
+  appId: "1:1014344456091:web:3fd8652f8e9e89608bf33e"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+const googleProvider = new GoogleAuthProvider();
+
+/* ================================================================
+   2. UTILITIES & ICONS
+   ================================================================ */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtTime = d => d ? new Date(d).toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }) : '—';
+const initials = n => n ? n.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase() : 'U';
+
+function toast(msg, type = 'success') {
+  const t = document.createElement('div');
+  t.className = `toast`;
+  if (type === 'error') t.style.background = 'var(--danger)';
+  if (type === 'success') t.style.background = 'var(--success)';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('show'));
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+function openModal(html, title) {
+  const el = document.createElement('div');
+  el.className = 'modal-overlay';
+  el.innerHTML = `<div class="modal"><div class="modal-header"><h3 style="font-size:18px; font-weight:800;">${title}</h3><button class="btn-secondary btn-sm" onclick="this.closest('.modal-overlay').remove(); clearInterval(window.quizTimer)">✕</button></div>${html}</div>`;
+  el.addEventListener('click', e => { if (e.target === el) { el.remove(); clearInterval(window.quizTimer); } });
+  document.body.appendChild(el);
+  return el;
+}
+const closeModal = () => { $('.modal-overlay')?.remove(); clearInterval(window.quizTimer); };
+
+async function uploadFile(file, path) {
+  if (!file) return null;
+  try {
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
+  } catch (error) {
+    console.error("Storage upload error:", error);
+    toast("Failed to upload file. Check Firebase Storage rules.", "error");
+    throw error;
+  }
+}
+
+const icons = {
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+  users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
+  trophy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>',
+  user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>',
+  logout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>',
+  image: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>',
+  mic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>',
+  quiz: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9a3 3 0 1 1 5 2.2c-.8.6-2 1.3-2 2.8"></path><circle cx="12" cy="18" r="1"></circle><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>',
+  heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>',
+  heartSolid: '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>',
+  comment: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>',
+  arrowLeft: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>',
+  google: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>',
+  chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>',
+  close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
+  send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>'
+};
+
+/* ================================================================
+   3. STATE & DATA
+   ================================================================ */
+let DB = { users: [], groups: [], posts: [], comments: [], quizAttempts: [], achievements: [], chats: [] };
+let session = null;
+let currentView = 'home';
+let loading = true;
+let authView = 'homepage'; 
+let openComments = new Set(); 
+let activeGroupFilter = null;
+
+// Chat State
+let isInboxOpen = false;
+let activeChatUser = null;
+let unsubscribeChat = null;
+
+let mediaRecorder;
+let audioChunks = [];
+let recordedAudioBlob = null;
+
+async function loadData() {
+  const cols = ['users', 'groups', 'posts', 'comments', 'quizAttempts', 'achievements'];
+  try {
+    const snaps = await Promise.all(cols.map(c => getDocs(collection(db, c))));
+    cols.forEach((c, i) => { DB[c] = snaps[i].docs.map(d => ({ id: d.id, ...d.data() })); });
+  } catch (error) {
+    console.error("Error loading data from Firestore:", error);
+  }
+}
+const createDoc = async (col, data) => (await addDoc(collection(db, col), data)).id;
+const updateDocById = (col, id, data) => updateDoc(doc(db, col, id), data);
+const deleteDocById = (col, id) => deleteDoc(doc(db, col, id));
+
+/* ================================================================
+   4. AUTH & PRESENCE
+   ================================================================ */
+let unsubscribeProfile = null;
+let presenceInterval = null;
+
+onAuthStateChanged(auth, async (user) => {
+  if (unsubscribeProfile) unsubscribeProfile();
+  if (presenceInterval) clearInterval(presenceInterval);
+  
+  loading = true; render();
+
+  try {
+    if (user) {
+      // Update presence immediately
+      const userRef = doc(db, 'users', user.uid);
+      const snap = await getDoc(userRef);
+      
+      if (snap.exists()) {
+        await updateDoc(userRef, { lastActive: new Date().toISOString() });
+        
+        // Ping presence every 30 seconds
+        presenceInterval = setInterval(() => {
+          updateDoc(userRef, { lastActive: new Date().toISOString() }).catch(()=>{});
+        }, 30000);
+      }
+
+      unsubscribeProfile = onSnapshot(userRef, async (snapshot) => {
+        try {
+          if (snapshot.exists()) {
+            const data = snapshot.data();
+            session = { 
+              uid: user.uid, email: user.email, name: data.name || '', username: data.username || '', 
+              photoURL: data.photoURL || null, groupIds: data.groupIds || [], lastActive: data.lastActive
+            };
+            await loadData();
+          } else {
+            session = { uid: user.uid, email: user.email, needsProfile: true };
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          loading = false; render();
+        }
+      }, (error) => {
+        console.error(error); loading = false; render();
+      });
+    } else {
+      session = null; loading = false; render();
+    }
+  } catch (error) {
+    console.error(error);
+    loading = false; render();
+  }
+});
+
+async function handleLogin(email, pass) {
+  const err = $('#auth-error'); if (err) err.style.display = 'none';
+  try { 
+    await signInWithEmailAndPassword(auth, email, pass); 
+  } catch (e) { 
+    if(err){ 
+      err.innerHTML = e.code === 'auth/invalid-credential' 
+        ? "<strong>Incorrect email or password.</strong><br>If you signed up using Google, click 'Continue with Google' below." 
+        : e.message; 
+      err.style.display='block'; 
+    } 
+  }
+}
+
+async function handleSignup(name, username, email, pass) {
+  const err = $('#auth-error'); if (err) err.style.display = 'none';
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await setDoc(doc(db, 'users', cred.user.uid), { name, username, email, groupIds: [], photoURL: null, lastActive: new Date().toISOString() });
+  } catch (e) { if(err){ err.textContent = e.message; err.style.display='block'; } }
+}
+
+async function handleGoogleLogin() {
+  const err = $('#auth-error'); if (err) err.style.display = 'none';
+  try { await signInWithPopup(auth, googleProvider); } 
+  catch (e) { if (e.code !== 'auth/popup-closed-by-user') { if(err){ err.textContent = e.message; err.style.display='block'; } } }
+}
+
+/* ================================================================
+   5. RENDER LOGIC
+   ================================================================ */
+function render() {
+  const app = $('#app');
+  if (loading) { app.innerHTML = `<div class="loading-screen"><div class="spinner"></div></div>`; return; }
+  
+  if (session && session.needsProfile) return app.innerHTML = setupProfilePage();
+  if (session && (!session.username || session.username.trim() === '')) return app.innerHTML = setupProfilePage();
+  
+  if (session) return app.innerHTML = mainAppShell();
+
+  if (authView === 'login') app.innerHTML = loginPage();
+  else if (authView === 'signup') app.innerHTML = signupPage();
+  else app.innerHTML = homepagePage();
+}
+
+/* --- Auth Pages (Homepage, Login, Signup, Setup) --- */
+function homepagePage() {
+  return `
+  <div style="min-height: 100vh; background: var(--bg);">
+    <nav class="landing-nav">
+      <div class="landing-brand"><div class="landing-brand-icon">P</div>ProQuiz</div>
+      <div class="landing-nav-links"><a href="#features">Features</a><a href="#how-it-works">How it Works</a></div>
+      <div class="landing-nav-actions">
+        <button class="btn btn-secondary" onclick="window.setAuthView('login')">Log In</button>
+        <button class="btn btn-primary" onclick="window.setAuthView('signup')">Sign Up Free</button>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-badge"><span>●</span> The #1 Social Learning Platform</div>
+        <h1>Connect, share, and <span>learn together.</span></h1>
+        <p>Join study groups, share voice notes, create interactive quizzes, and climb the leaderboard with your classmates.</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" style="padding: 16px 36px; font-size: 18px;" onclick="window.setAuthView('signup')">Get Started for Free</button>
+          <button class="btn btn-secondary" style="padding: 16px 36px; font-size: 18px;" onclick="window.setAuthView('login')">I have an account</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="features" id="features">
+      <div class="section-header"><h2>Everything you need to ace your exams</h2></div>
+      <div class="feature-grid">
+        <div class="feature-card"><div class="feature-icon">${icons.quiz}</div><h3>Interactive Quizzes</h3><p>Create custom quizzes with multiple-choice questions, set time limits, and compete to get the highest score.</p></div>
+        <div class="feature-card"><div class="feature-icon">${icons.mic}</div><h3>Voice Notes & Media</h3><p>Stuck on a math problem? Upload a picture or record a voice note explaining the question so your group can help.</p></div>
+        <div class="feature-card"><div class="feature-icon">${icons.users}</div><h3>Study Groups</h3><p>Create private groups for your class or study circle. Invite friends with a unique code and share notes securely.</p></div>
+        <div class="feature-card"><div class="feature-icon">${icons.trophy}</div><h3>Leaderboards</h3><p>Earn points by completing quizzes. Watch your name rise to the top of the group leaderboard and collect medals.</p></div>
+      </div>
+    </section>
+  </div>`;
+}
+
+function setupProfilePage() {
+  return `
+  <div class="auth-split">
+    <div class="auth-cover"><div class="auth-cover-content"><h1>Almost there.</h1><p>Just pick a unique username so your friends can find you on the leaderboard.</p></div></div>
+    <div class="auth-form-side"><div class="auth-form-container">
+      <div class="auth-header"><h2>Complete Profile</h2><p>Tell us who you are.</p></div>
+      <form id="setup-profile-form">
+        <div class="input-group"><input type="text" id="p-name" placeholder=" " value="${esc(session.name || '')}" required><label>Full Name</label></div>
+        <div class="input-group"><input type="text" id="p-username" placeholder=" " value="${esc(session.username || '')}" required><label>Username</label></div>
+        <button type="submit" class="auth-submit-btn">Save Profile</button>
+      </form>
+      <div class="auth-footer"><button class="btn btn-secondary btn-sm" onclick="window.doLogout()">Sign out</button></div>
+    </div></div>
+  </div>`;
+}
+
+function loginPage() {
+  return `
+  <div class="auth-split">
+    <div class="auth-cover"><div class="auth-cover-content"><h1>Welcome back.</h1><p>Log in to access your study groups, quizzes, and leaderboard.</p></div></div>
+    <div class="auth-form-side"><div class="auth-form-container">
+      <button class="back-btn" onclick="window.goHome()">${icons.arrowLeft} Back</button>
+      <div class="auth-header"><h2>Log In</h2><p>Welcome back! Please enter your details.</p></div>
+      <div id="auth-error" class="alert alert-danger"></div>
+      <form id="login-form">
+        <div class="input-group"><input type="email" id="email" placeholder=" " required><label>Email address</label></div>
+        <div class="input-group"><input type="password" id="pass" placeholder=" " required><label>Password</label></div>
+        <button type="submit" class="auth-submit-btn">Log In</button>
+      </form>
+      <div class="auth-divider">OR</div>
+      <button class="google-login-btn" onclick="window.handleGoogleLogin()">${icons.google} Continue with Google</button>
+      <div class="auth-footer">Don't have an account? <a onclick="window.setAuthView('signup')">Sign Up</a></div>
+    </div></div>
+  </div>`;
+}
+
+function signupPage() {
+  return `
+  <div class="auth-split">
+    <div class="auth-cover"><div class="auth-cover-content"><h1>Join the community.</h1><p>Create an account to start sharing notes, quizzes, and voice notes.</p></div></div>
+    <div class="auth-form-side"><div class="auth-form-container">
+      <button class="back-btn" onclick="window.goHome()">${icons.arrowLeft} Back</button>
+      <div class="auth-header"><h2>Create Account</h2><p>Get started for free.</p></div>
+      <div id="auth-error" class="alert alert-danger"></div>
+      <form id="signup-form">
+        <div class="input-group"><input type="text" id="s-name" placeholder=" " required><label>Full Name</label></div>
+        <div class="input-group"><input type="text" id="s-username" placeholder=" " required><label>Username</label></div>
+        <div class="input-group"><input type="email" id="s-email" placeholder=" " required><label>Email address</label></div>
+        <div class="input-group"><input type="password" id="s-pass" placeholder=" " required minlength="6"><label>Password</label></div>
+        <button type="submit" class="auth-submit-btn">Create Account</button>
+      </form>
+      <div class="auth-divider">OR</div>
+      <button class="google-login-btn" onclick="window.handleGoogleLogin()">${icons.google} Continue with Google</button>
+      <div class="auth-footer">Already have an account? <a onclick="window.setAuthView('login')">Log In</a></div>
+    </div></div>
+  </div>`;
+}
+
+/* ================================================================
+   6. MAIN APP SHELL
+   ================================================================ */
+function mainAppShell() {
+  const avatarUrl = session.photoURL || `https://ui-avatars.com/api/?name=${initials(session.username)}&background=1e3a8a&color=fff`;
+  const myGroups = DB.groups.filter(g => session.groupIds.includes(g.id));
+
+  // Leaderboard
+  const groupAttempts = DB.quizAttempts;
+  const leaderboardMap = {};
+  groupAttempts.forEach(att => {
+    if (!leaderboardMap[att.userId]) leaderboardMap[att.userId] = { username: att.username, score: 0 };
+    leaderboardMap[att.userId].score += att.score;
+  });
+  const leaderboard = Object.values(leaderboardMap).sort((a,b) => b.score - a.score).slice(0, 5);
+
+  return `
+  <div class="app-layout">
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar-left">
+      <div class="brand"><div class="brand-icon">P</div><h2 style="font-size:22px; font-weight:800;">ProQuiz</h2></div>
+      
+      <button class="nav-item ${currentView === 'home' ? 'active' : ''}" onclick="window.navTo('home')">
+        <div class="nav-icon">${icons.home}</div> Home
+      </button>
+      <button class="nav-item ${currentView === 'friends' ? 'active' : ''}" onclick="window.navTo('friends')">
+        <div class="nav-icon">${icons.users}</div> Members
+      </button>
+      <button class="nav-item ${currentView === 'achievements' ? 'active' : ''}" onclick="window.navTo('achievements')">
+        <div class="nav-icon">${icons.trophy}</div> Achievements
+      </button>
+      <button class="nav-item ${currentView === 'profile' ? 'active' : ''}" onclick="window.navTo('profile')">
+        <div class="nav-icon">${icons.user}</div> Profile
+      </button>
+
+      <div class="user-nav-card">
+        <div class="user-nav-profile" onclick="window.navTo('profile')">
+          <img src="${avatarUrl}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+          <div>
+            <div style="font-weight:800; font-size:15px;">${esc(session.username)}</div>
+            <div style="font-size:13px; color:var(--success); font-weight:600;">Online</div>
+          </div>
+        </div>
+        <button class="nav-item" onclick="window.doLogout()" style="margin-top:8px;">
+          <div class="nav-icon">${icons.logout}</div> Log Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- CENTER FEED -->
+    <main class="main-feed">
+      ${renderFeedView()}
+    </main>
+
+    <!-- RIGHT SIDEBAR -->
+    <aside class="sidebar-right">
+      
+      <!-- Inbox Button -->
+      <div class="side-card" style="padding:16px;">
+        <button class="btn btn-primary btn-block" onclick="window.toggleInbox()">
+          ${icons.chat} Inbox & Messages
+        </button>
+      </div>
+
+      <!-- Groups Section -->
+      <div class="side-card">
+        <h3>Your Groups</h3>
+        <button class="btn btn-secondary btn-block" style="margin-bottom:12px; padding:10px; justify-content:flex-start;" onclick="window.setGroupFilter(null)">
+          🌍 Global Feed
+        </button>
+        ${myGroups.map(g => `
+          <button class="btn btn-secondary btn-block" style="margin-bottom:8px; padding:10px; justify-content:flex-start; border-color:${activeGroupFilter===g.id?'var(--primary)':'var(--border)'}" onclick="window.setGroupFilter('${g.id}')">
+            👥 ${esc(g.name)}
+          </button>
+        `).join('') || '<p style="font-size:13px; color:var(--text-muted); text-align:center; margin-bottom:12px;">No groups joined yet.</p>'}
+        
+        <button class="btn btn-primary btn-block" style="padding:10px; font-size:13px; margin-top:12px;" onclick="window.openGroupModal()">
+          + Create or Join Group
+        </button>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="side-card">
+        <h3>🏆 Top Learners</h3>
+        ${leaderboard.map((u, i) => `
+          <div class="lb-row">
+            <div class="lb-rank">#${i+1}</div>
+            <div class="lb-name">${esc(u.username)}</div>
+            <div class="lb-score">${u.score} pts</div>
+          </div>
+        `).join('') || '<div style="text-align:center; padding:12px; color:var(--text-muted); font-size:14px;">No points yet.</div>'}
+      </div>
+    </aside>
+
+    <!-- MOBILE BOTTOM NAV -->
+    <nav class="mobile-nav">
+      <button class="mobile-nav-item ${currentView === 'home' ? 'active' : ''}" onclick="window.navTo('home')">${icons.home} Home</button>
+      <button class="mobile-nav-item ${currentView === 'friends' ? 'active' : ''}" onclick="window.navTo('friends')">${icons.users} Members</button>
+      <button class="mobile-nav-item" onclick="window.toggleInbox()">${icons.chat} Inbox</button>
+      <button class="mobile-nav-item ${currentView === 'profile' ? 'active' : ''}" onclick="window.navTo('profile')">${icons.user} Profile</button>
+    </nav>
+
+    <!-- Mobile FAB -->
+    <button class="mobile-fab" onclick="window.openPostComposer('text')">${icons.plus}</button>
+
+    ${renderInbox()}
+  </div>`;
+}
+
+/* ================================================================
+   7. INBOX / CHAT SYSTEM
+   ================================================================ */
+function renderInbox() {
+  const otherUsers = DB.users.filter(u => u.id !== session.uid);
+  
+  return `
+  <div class="inbox-drawer ${isInboxOpen ? 'open' : ''}" id="inbox-drawer">
+    <div class="inbox-header">
+      ${activeChatUser ? `
+        <div style="display:flex; align-items:center; gap:12px;">
+          <button class="btn btn-secondary btn-sm" onclick="window.closeChat()">← Back</button>
+          <strong style="font-size:16px;">${esc(activeChatUser.username)}</strong>
+        </div>
+      ` : `
+        <h3 style="font-size:18px; font-weight:800;">Inbox</h3>
+        <button class="btn btn-secondary btn-sm" onclick="window.toggleInbox()">${icons.close}</button>
+      `}
+    </div>
+    
+    <div class="inbox-body">
+      ${activeChatUser ? renderActiveChat() : renderChatList(otherUsers)}
+    </div>
+  </div>`;
+}
+
+function renderChatList(users) {
+  return users.map(u => {
+    const isOnline = u.lastActive && (new Date() - new Date(u.lastActive)) < 120000; // 2 mins
+    const uAvatar = u.photoURL || `https://ui-avatars.com/api/?name=${initials(u.username)}&background=1e3a8a&color=fff`;
+    return `
+      <div class="chat-user-row" onclick="window.openChat('${u.id}')">
+        <div style="position:relative;">
+          <img src="${uAvatar}" style="width:44px; height:44px; border-radius:50%; object-fit:cover;">
+          <div class="presence-dot ${isOnline ? 'online' : ''}"></div>
+        </div>
+        <div>
+          <div style="font-weight:800; font-size:15px;">${esc(u.username)}</div>
+          <div style="font-size:13px; color:var(--text-muted);">${isOnline ? 'Active now' : 'Offline'}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderActiveChat() {
+  return `
+    <div class="chat-messages" id="chat-messages-container">
+      <div style="text-align:center; color:var(--text-muted); font-size:13px; margin:20px 0;">Start of conversation</div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeypress="window.handleChatKeyPress(event)">
+      <button class="btn btn-primary" style="border-radius:50%; width:44px; height:44px; padding:0;" onclick="window.sendChatMessage()">${icons.send}</button>
+    </div>
+  `;
+}
+
+window.toggleInbox = () => {
+  isInboxOpen = !isInboxOpen;
+  if (!isInboxOpen) activeChatUser = null;
+  if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
+  render();
+};
+
+window.openChat = (userId) => {
+  activeChatUser = DB.users.find(u => u.id === userId);
+  render();
+  loadChatMessages();
+};
+
+window.closeChat = () => {
+  activeChatUser = null;
+  if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
+  render();
+};
+
+window.handleChatKeyPress = (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); window.sendChatMessage(); }
+};
+
+window.sendChatMessage = async () => {
+  const input = $('#chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  input.value = '';
+  
+  const chatId = [session.uid, activeChatUser.id].sort().join('_');
+  
+  await createDoc('chats', {
+    chatId,
+    senderId: session.uid,
+    receiverId: activeChatUser.id,
+    text,
+    createdAt: new Date().toISOString()
+  });
+};
+
+async function loadChatMessages() {
+  if (unsubscribeChat) unsubscribeChat();
+  
+  const chatId = [session.uid, activeChatUser.id].sort().join('_');
+  const q = query(collection(db, 'chats'), where('chatId', '==', chatId), orderBy('createdAt', 'asc'));
+  
+  unsubscribeChat = onSnapshot(q, (snap) => {
+    const container = $('#chat-messages-container');
+    if (!container) return;
+    
+    container.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:13px; margin:20px 0;">Chat with ${esc(activeChatUser.username)}</div>`;
+    
+    snap.forEach(docSnap => {
+      const msg = docSnap.data();
+      const isMe = msg.senderId === session.uid;
+      container.innerHTML += `
+        <div class="msg-bubble ${isMe ? 'msg-sent' : 'msg-received'}">
+          ${esc(msg.text)}
+        </div>
+      `;
+    });
+    
+    container.scrollTop = container.scrollHeight;
+  });
+}
+
+/* ================================================================
+   8. FEED VIEWS
+   ================================================================ */
+function renderFeedView() {
+  if (currentView === 'home') return viewHomeFeed();
+  if (currentView === 'friends') return viewFriends();
+  if (currentView === 'achievements') return viewAchievements();
+  if (currentView === 'profile') return viewProfile();
+  return viewHomeFeed();
+}
+
+function viewHomeFeed() {
+  const avatarUrl = session.photoURL || `https://ui-avatars.com/api/?name=${initials(session.username)}&background=1e3a8a&color=fff`;
+  
+  let groupPosts = DB.posts;
+  if (activeGroupFilter) groupPosts = groupPosts.filter(p => p.groupId === activeGroupFilter);
+  groupPosts = groupPosts.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  const currentGroupName = activeGroupFilter ? DB.groups.find(g=>g.id===activeGroupFilter)?.name : 'Global Feed';
+
+  return `
+    <!-- Composer -->
+    <div class="composer">
+      <div class="composer-top">
+        <img src="${avatarUrl}" style="width:44px; height:44px; border-radius:50%; object-fit:cover; cursor:pointer;" onclick="window.navTo('profile')">
+        <button class="composer-input" onclick="window.openPostComposer('text')">Share something with ${currentGroupName}...</button>
+      </div>
+      <div class="composer-actions">
+        <button class="composer-btn" onclick="window.openPostComposer('image')">${icons.image} Photo</button>
+        <button class="composer-btn" onclick="window.openPostComposer('audio')">${icons.mic} Voice</button>
+        <button class="composer-btn" onclick="window.openQuizBuilder()">${icons.quiz} Quiz</button>
+      </div>
+    </div>
+
+    ${activeGroupFilter ? `
+      <div style="background:var(--primary-light); padding:12px 20px; border-radius:12px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-weight:800; color:var(--primary);">Viewing: ${esc(currentGroupName)}</span>
+        <button class="btn btn-sm btn-secondary" onclick="window.setGroupFilter(null)">Exit</button>
+      </div>
+    ` : ''}
+
+    ${groupPosts.map(post => renderPost(post)).join('') || `
+      <div style="text-align:center; padding:60px 20px; background:var(--surface); border-radius:16px; border:1px dashed var(--border);">
+        <div style="font-size:40px; margin-bottom:16px;">📭</div>
+        <h3 style="font-weight:800; margin-bottom:8px;">No posts yet</h3>
+        <p style="color:var(--text-muted); font-size:15px;">Be the first to share!</p>
+      </div>
+    `}
+  `;
+}
+
+function renderPost(post) {
+  const isLiked = post.likes && post.likes.includes(session.uid);
+  const heartIcon = isLiked ? icons.heartSolid : icons.heart;
+  const likeColor = isLiked ? 'var(--danger)' : 'var(--text-muted)';
+  
+  const postComments = DB.comments.filter(c => c.postId === post.id).sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+  const isAuthor = post.creatorId === session.uid;
+  const isCommentsOpen = openComments.has(post.id);
+  
+  const postAvatar = post.creatorAvatar || `https://ui-avatars.com/api/?name=${initials(post.creatorName)}&background=ccc&color=333`;
+  const group = DB.groups.find(g => g.id === post.groupId);
+  const groupBadge = group ? `<span class="badge badge-primary" style="margin-left:8px; font-size:10px;">${esc(group.name)}</span>` : '';
+
+  let mainContent = '';
+  
+  if (post.type === 'quiz') {
+    const isExpired = new Date(post.endTime) < new Date();
+    const myAttempts = DB.quizAttempts.filter(a => a.quizId === post.id && a.userId === session.uid);
+    const hasTaken = myAttempts.length > 0;
+    
+    let actionBtn = '';
+    if (isExpired) actionBtn = `<span class="badge badge-hard">Ended</span>`;
+    else if (hasTaken) actionBtn = `<span class="badge badge-success">Completed</span>`;
+    else actionBtn = `<button class="btn btn-primary btn-sm" onclick="window.takeQuiz('${post.id}')">Start Quiz</button>`;
+
+    mainContent = `
+      <div class="quiz-attachment">
+        <div class="quiz-attachment-header">
+          <div><span class="badge badge-primary">${esc(post.subject)}</span> <span class="badge badge-${post.difficulty.toLowerCase()}">${esc(post.difficulty)}</span></div>
+          <span style="font-size:12px; color:var(--text-muted); font-weight:700;">${post.questions.length} Qs</span>
+        </div>
+        <h3>${esc(post.quizTitle)}</h3>
+        <p style="font-size:14px; color:var(--text-muted); font-weight:500; margin-bottom:16px;">Topic: ${esc(post.topic)}</p>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:13px; color:var(--text-muted); font-weight:600;">Ends: ${fmtTime(post.endTime)}</span>
+          ${actionBtn}
+        </div>
+      </div>
+    `;
+  } else {
+    mainContent = `
+      <div class="post-content">
+        ${post.description ? `<p style="margin-bottom:12px;">${esc(post.description)}</p>` : ''}
+        ${post.imageUrl ? `<img src="${esc(post.imageUrl)}" class="post-media">` : ''}
+        ${post.audioUrl ? `<audio controls src="${esc(post.audioUrl)}" style="width:100%; margin-top:12px; outline:none; border-radius:8px;"></audio>` : ''}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="post">
+      <div class="post-header">
+        <img src="${postAvatar}" class="post-avatar">
+        <div class="post-meta" style="flex:1;">
+          <h4>${esc(post.creatorName)} ${groupBadge}</h4>
+          <span>${fmtTime(post.createdAt)}</span>
+        </div>
+        ${isAuthor ? `<button onclick="window.deletePost('${post.id}')" style="color:var(--text-muted); padding:8px;">✕</button>` : ''}
+      </div>
+      ${mainContent}
+      <div class="post-actions">
+        <button class="post-action-btn ${isLiked ? 'liked' : ''}" onclick="window.toggleLike('${post.id}', ${isLiked})" style="color:${likeColor};">
+          ${heartIcon} Like ${post.likes && post.likes.length > 0 ? `(${post.likes.length})` : ''}
+        </button>
+        <button class="post-action-btn" onclick="window.toggleComments('${post.id}')">
+          ${icons.comment} Comment (${postComments.length})
+        </button>
+      </div>
+      <div class="comments-section ${isCommentsOpen ? 'active' : ''}" id="comments-${post.id}">
+        ${postComments.map(c => `
+          <div class="comment">
+            <img src="${c.authorAvatar || `https://ui-avatars.com/api/?name=${initials(c.authorName)}&background=ccc&color=333`}" style="width:32px; height:32px; border-radius:50%;">
+            <div class="comment-bubble"><h5>${esc(c.authorName)}</h5><p>${esc(c.text)}</p></div>
+          </div>
+        `).join('')}
+        <div class="comment-input-wrap">
+          <img src="${session.photoURL || `https://ui-avatars.com/api/?name=${initials(session.username)}&background=1e3a8a&color=fff`}" style="width:32px; height:32px; border-radius:50%;">
+          <form onsubmit="window.addComment(event, '${post.id}')" style="flex:1; display:flex; gap:8px;">
+            <input type="text" class="comment-input" placeholder="Write a comment..." required>
+            <button type="submit" style="color:var(--primary); font-weight:700;">Post</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function viewFriends() {
+  const allUsers = DB.users.filter(u => u.id !== session.uid);
+  return `
+    <div class="post" style="padding:24px;">
+      <h2 style="font-size:20px; font-weight:800; margin-bottom:20px;">Community Members (${allUsers.length})</h2>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        ${allUsers.map(u => {
+          const isOnline = u.lastActive && (new Date() - new Date(u.lastActive)) < 120000;
+          const uAvatar = u.photoURL || `https://ui-avatars.com/api/?name=${initials(u.username)}&background=1e3a8a&color=fff`;
+          return `
+            <div style="display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--border); border-radius:12px;">
+              <div style="position:relative;">
+                <img src="${uAvatar}" style="width:48px; height:48px; border-radius:50%; object-fit:cover;">
+                <div class="presence-dot ${isOnline ? 'online' : ''}" style="width:12px; height:12px;"></div>
+              </div>
+              <div style="flex:1;">
+                <div style="font-weight:800;">${esc(u.username)}</div>
+                <div style="font-size:13px; color:var(--text-muted);">${esc(u.name)}</div>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="window.openChat('${u.id}')">Message</button>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function viewAchievements() {
+  const myAchievements = DB.achievements.filter(a => a.userId === session.uid).sort((a,b) => new Date(b.date) - new Date(a.date));
+  return `
+    <div class="post" style="padding:24px;">
+      <h2 style="font-size:20px; font-weight:800; margin-bottom:20px;">My Achievements</h2>
+      ${myAchievements.length === 0 ? `<p style="color:var(--text-muted);">No medals yet. Take a quiz and finish in the top 3!</p>` : ''}
+      ${myAchievements.map(a => `
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px; padding:16px; background:var(--bg); border-radius:12px;">
+          <div style="font-size:32px;">${a.medal === 'gold' ? '🥇' : a.medal === 'silver' ? '🥈' : '🥉'}</div>
+          <div><div style="font-weight:800; font-size:16px;">${esc(a.quizTitle)}</div><div style="font-size:13px; color:var(--text-muted);">Placed ${a.medal.toUpperCase()} on ${fmtTime(a.date)}</div></div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function viewProfile() {
+  const avatarUrl = session.photoURL || `https://ui-avatars.com/api/?name=${initials(session.username)}&background=1e3a8a&color=fff`;
+  return `
+    <div class="post">
+      <div style="height:160px; background:linear-gradient(135deg, var(--primary), var(--accent)); border-radius:16px 16px 0 0;"></div>
+      <div style="padding:0 24px 24px; position:relative; text-align:center;">
+        <div style="margin-top:-50px; margin-bottom:16px; position:relative; display:inline-block;">
+          <img src="${avatarUrl}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:4px solid var(--surface);">
+          <label style="position:absolute; bottom:0; right:0; background:var(--surface); border:1px solid var(--border); width:32px; height:32px; border-radius:50%; display:grid; place-items:center; cursor:pointer; box-shadow:var(--shadow-sm);">
+            📷<input type="file" accept="image/*" style="display:none;" onchange="window.handleAvatarUpload(this.files[0])">
+          </label>
+        </div>
+        <h2 style="font-size:24px; font-weight:800;">${esc(session.name)}</h2>
+        <p style="color:var(--text-muted); font-size:15px; font-weight:600;">@${esc(session.username)}</p>
+        <form id="profile-form" style="max-width:400px; margin:32px auto 0; text-align:left;">
+          <div class="form-group"><label class="form-label">Full Name</label><input type="text" id="pr-name" class="form-control" value="${esc(session.name)}" required></div>
+          <div class="form-group"><label class="form-label">Username</label><input type="text" id="pr-username" class="form-control" value="${esc(session.username)}" required></div>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  `;
+}
+
+/* ================================================================
+   9. ACTIONS & MODALS
+   ================================================================ */
+window.doLogout = () => signOut(auth);
+window.navTo = (v) => { currentView = v; render(); };
+window.setAuthView = (v) => { authView = v; render(); };
+window.goHome = () => { authView = 'homepage'; render(); };
+window.handleGoogleLogin = handleGoogleLogin;
+
+window.setGroupFilter = (gid) => {
+  activeGroupFilter = gid;
+  currentView = 'home';
+  render();
+};
+
+window.handleAvatarUpload = async (file) => {
+  if(!file) return;
+  toast('Uploading avatar...');
+  try {
+    const url = await uploadFile(file, `avatars/${session.uid}`);
+    await updateDocById('users', session.uid, { photoURL: url });
+    toast('Avatar updated!');
+  } catch (e) { toast(e.message, 'error'); }
+};
+
+window.toggleLike = async (postId, isLiked) => {
+  try {
+    const postRef = doc(db, 'posts', postId);
+    if (isLiked) await updateDoc(postRef, { likes: arrayRemove(session.uid) });
+    else await updateDoc(postRef, { likes: arrayUnion(session.uid) });
+    await loadData(); render();
+  } catch (e) { toast(e.message, 'error'); }
+};
+
+window.toggleComments = (postId) => {
+  if (openComments.has(postId)) openComments.delete(postId);
+  else openComments.add(postId);
+  const el = $(`#comments-${postId}`);
+  if (el) el.classList.toggle('active');
+};
+
+window.addComment = async (e, postId) => {
+  e.preventDefault();
+  const input = e.target.querySelector('input');
+  if (!input.value.trim()) return;
+  
+  const avatarUrl = session.photoURL || `https://ui-avatars.com/api/?name=${initials(session.username)}&background=1e3a8a&color=fff`;
+  
+  try {
+    await createDoc('comments', {
+      postId, authorId: session.uid, authorName: session.username, authorAvatar: avatarUrl,
+      text: input.value.trim(), createdAt: new Date().toISOString()
+    });
+    input.value = '';
+    openComments.add(postId);
+    await loadData(); render();
+  } catch (e) { toast(e.message, 'error'); }
+};
+
+window.deletePost = async (postId) => {
+  if(!confirm('Delete this post?')) return;
+  try { await deleteDocById('posts', postId); await loadData(); render(); toast('Post deleted'); } 
+  catch (e) { toast(e.message, 'error'); }
+};
+
+window.openGroupModal = () => {
+  openModal(`
+    <div class="modal-body">
+      <div style="margin-bottom:32px;">
+        <h4 style="font-size:16px; font-weight:800; margin-bottom:12px;">Join an existing group</h4>
+        <form id="join-group-form" style="display:flex; gap:12px;">
+          <input type="text" id="j-code" class="form-control" placeholder="Enter invite code" required style="text-transform:uppercase;">
+          <button type="submit" class="btn btn-primary">Join</button>
+        </form>
+      </div>
+      <div style="text-align:center; margin:24px 0; position:relative;">
+        <hr style="border:0; border-top:1px solid var(--border);">
+        <span style="position:absolute; top:-10px; left:50%; transform:translateX(-50%); background:var(--surface); padding:0 12px; font-size:12px; font-weight:700; color:var(--text-muted);">OR</span>
+      </div>
+      <div>
+        <h4 style="font-size:16px; font-weight:800; margin-bottom:12px;">Create a new group</h4>
+        <form id="create-group-form">
+          <input type="text" id="g-name" class="form-control" placeholder="Group Name (e.g. Grade 12 Math)" required style="margin-bottom:12px;">
+          <button type="submit" class="btn btn-secondary btn-block">Create Group</button>
+        </form>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Close</button></div>
+  `, 'Groups');
+};
+
+/* ================================================================
+   POST COMPOSER & QUIZ BUILDER
+   ================================================================ */
+window.openPostComposer = (type) => {
+  recordedAudioBlob = null;
+  const isAudio = type === 'audio';
+
+  openModal(`
+    <div class="modal-body">
+      <textarea id="post-desc" class="form-control" rows="4" placeholder="What's on your mind?" style="border:none; background:transparent; font-size:18px; font-weight:600; margin-bottom:16px;"></textarea>
+      
+      ${isAudio ? `
+        <div class="recording-ui" id="recording-container">
+          <p id="recording-status" style="font-size:14px; font-weight:700; margin-bottom:16px; color:var(--text-main);">
+            ${recordedAudioBlob ? 'Voice note recorded!' : 'Tap the mic to record.'}
+          </p>
+          <button class="mic-btn" id="record-btn" onclick="window.startRecording()">${icons.mic}</button>
+          <button class="btn btn-danger" id="stop-record-btn" style="display:none; margin:0 auto;" onclick="window.stopRecording()">Stop Recording</button>
+        </div>
+      ` : `
+        <div class="form-group">
+          <input type="file" id="post-image" class="form-control" accept="image/*">
+        </div>
+      `}
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+      <button class="btn btn-primary" onclick="window.submitPost('${type}')">Post</button>
+    </div>
+  `, isAudio ? 'Voice Note' : 'Create Post');
+};
+
+window.submitPost = async (type) => {
+  const desc = $('#post-desc').value;
+  let imageUrl = null, audioUrl = null;
+  
+  try {
+    if (type === 'image') {
+      const file = $('#post-image').files[0];
+      if (file) {
+        toast('Uploading image...');
+        imageUrl = await uploadFile(file, `posts/${session.uid}_${Date.now()}_img`);
+      }
+    } else if (type === 'audio') {
+      if (recordedAudioBlob) {
+        toast('Uploading voice note...');
+        audioUrl = await uploadFile(recordedAudioBlob, `posts/${session.uid}_${Date.now()}_audio.webm`);
+      }
+    }
+
+    const avatarUrl = session.photoURL || `https://ui-avatars.com/api/?name=${initials(session.username)}&background=1e3a8a&color=fff`;
+
+    await createDoc('posts', {
+      groupId: activeGroupFilter || null, type: 'media', description: desc, imageUrl, audioUrl,
+      creatorId: session.uid, creatorName: session.username, creatorAvatar: avatarUrl, likes: [], createdAt: new Date().toISOString()
+    });
+    closeModal(); await loadData(); render(); toast('Posted successfully!');
+  } catch (e) { toast(e.message, 'error'); }
+};
+
+window.startRecording = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.onstop = () => {
+      recordedAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      $('#recording-status').textContent = 'Voice note recorded! Ready to post.';
+      $('#record-btn').style.display = 'none';
+      $('#stop-record-btn').style.display = 'none';
+    };
+    mediaRecorder.start();
+    $('#recording-status').textContent = 'Recording...';
+    $('#record-btn').style.display = 'none';
+    $('#stop-record-btn').style.display = 'block';
+  } catch (e) { toast('Microphone access denied.', 'error'); }
+};
+
+window.stopRecording = () => {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+    mediaRecorder.stream.getTracks().forEach(track => track.stop());
+  }
+};
+
+/* --- DYNAMIC QUIZ BUILDER --- */
+window.draftQuestions = [];
+
+function renderQuizQuestions() {
+  return window.draftQuestions.map((q, i) => `
+    <div style="background:var(--bg); padding:16px; border-radius:12px; margin-bottom:16px; border:1px solid var(--border);">
+      <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+        <span style="font-weight:800; font-size:14px;">Question ${i + 1}</span>
+        ${window.draftQuestions.length > 1 ? `<button class="btn btn-danger btn-sm" onclick="window.removeQuestion(${i})">Remove</button>` : ''}
+      </div>
+      <input type="text" class="form-control" placeholder="Question text" value="${esc(q.q)}" oninput="window.draftQuestions[${i}].q = this.value" style="margin-bottom:12px;">
+      ${q.options.map((opt, j) => `
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <input type="radio" name="correct_${i}" ${q.correct === j ? 'checked' : ''} onchange="window.draftQuestions[${i}].correct = ${j}" style="accent-color:var(--primary); width:18px; height:18px;">
+          <input type="text" class="form-control" placeholder="Option ${j + 1}" value="${esc(opt)}" oninput="window.draftQuestions[${i}].options[${j}] = this.value">
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+window.openQuizBuilder = () => {
+  const defaultEnd = new Date(Date.now() + 24 * 60 * 60000);
+  const formatDT = (d) => {
+    const pad = (n) => n.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+  window.draftQuestions = [{ q: '', options: ['', '', '', ''], correct: 0 }];
+
+  openModal(`
+    <div class="modal-body">
+      <div class="form-group"><input type="text" class="form-control" id="qz-title" placeholder="Quiz Title" required></div>
+      <div style="display:flex; gap:12px; margin-bottom:16px;">
+        <select class="form-control" id="qz-subject">
+          <option value="Mathematics">Mathematics</option><option value="Physical Sciences">Physical Sciences</option><option value="Life Sciences">Life Sciences</option><option value="History">History</option><option value="Custom">Custom</option>
+        </select>
+        <input type="text" class="form-control" id="qz-topic" placeholder="Topic (e.g. Algebra)">
+        <select class="form-control" id="qz-difficulty">
+          <option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Ends At</label><input type="datetime-local" class="form-control" id="qz-end" value="${formatDT(defaultEnd)}"></div>
+      <div id="qz-questions-container">${renderQuizQuestions()}</div>
+      <button class="btn btn-secondary btn-block" onclick="window.addQuestion()" style="margin-top:16px;">+ Add Another Question</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+      <button class="btn btn-primary" onclick="window.submitQuizPost()">Publish Quiz</button>
+    </div>
+  `, 'Create Quiz');
+};
+
+window.addQuestion = () => { window.draftQuestions.push({ q: '', options: ['', '', '', ''], correct: 0 }); $('#qz-questions-container').innerHTML = renderQuizQuestions(); };
+window.removeQuestion = (index) => { window.draftQuestions.splice(index, 1); $('#qz-questions-container').innerHTML = renderQuizQuestions(); };
+
+window.submitQuizPost = async () => {
+  const title = $('#qz-title').value;
+  if (!title) return toast('Please enter a quiz title', 'error');
+  const validQuestions = window.draftQuestions.filter(q => q.q.trim() !== '');
+  if (validQuestions.length === 0) return toast('Please add at least one question', 'error');
+
+  const avatarUrl = session.photoURL || `https://ui-avatars.com/api/?name=${initials(session.username)}&background=1e3a8a&color=fff`;
+
+  try {
+    await createDoc('posts', {
+      groupId: activeGroupFilter || null, type: 'quiz', quizTitle: title,
+      subject: $('#qz-subject').value, topic: $('#qz-topic').value || 'General', difficulty: $('#qz-difficulty').value,
+      endTime: $('#qz-end').value,
+      questions: validQuestions.map((q, i) => ({ id: `q_${i}`, q: q.q, options: q.options, correct: q.correct, marks: 1 })),
+      creatorId: session.uid, creatorName: session.username, creatorAvatar: avatarUrl, likes: [], createdAt: new Date().toISOString()
+    });
+    closeModal(); await loadData(); render(); toast('Quiz Published!');
+  } catch(e) { toast(e.message, 'error'); }
+};
+
+/* ================================================================
+   TAKE QUIZ
+   ================================================================ */
+window.takeQuiz = (postId) => {
+  const post = DB.posts.find(p => p.id === postId);
+  if(!post) return;
+
+  openModal(`
+    <div class="modal-body">
+      <h3 style="font-size:20px; font-weight:800; margin-bottom:8px;">${esc(post.quizTitle)}</h3>
+      <p style="color:var(--text-muted); font-size:14px; margin-bottom:24px;">${esc(post.topic)} · ${post.questions.length} Questions</p>
+      <form id="quiz-form">
+        ${post.questions.map((q, i) => `
+          <div style="margin-bottom:32px;">
+            <h4 style="margin-bottom:16px; font-size:16px; font-weight:700;">${i+1}. ${esc(q.q)}</h4>
+            ${q.options.map((opt, j) => `
+              <label class="quiz-choice"><input type="radio" name="q_${i}" value="${j}" required> <span>${esc(opt)}</span></label>
+            `).join('')}
+          </div>
+        `).join('')}
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+      <button class="btn btn-primary" onclick="window.submitSocialQuiz('${postId}')">Submit Answers</button>
+    </div>
+  `, 'Take Quiz');
+};
+
+window.submitSocialQuiz = async (postId) => {
+  const post = DB.posts.find(p => p.id === postId);
+  let score = 0, total = 0, allAnswered = true;
+  
+  post.questions.forEach((q, i) => {
+    total += 1;
+    const val = document.querySelector(`input[name="q_${i}"]:checked`);
+    if (!val) allAnswered = false;
+    else if (Number(val.value) === q.correct) score++;
+  });
+
+  if (!allAnswered) return toast('Please answer all questions before submitting.', 'error');
+
+  try {
+    await createDoc('quizAttempts', { quizId: post.id, userId: session.uid, username: session.username, score, total, date: new Date().toISOString() });
+    closeModal(); await loadData(); render(); toast(`Quiz complete! You scored ${score}/${total}`);
+  } catch(e) { toast(e.message, 'error'); }
+};
+
+/* ================================================================
+   10. FORM SUBMISSIONS
+   ================================================================ */
+document.addEventListener('submit', async e => {
+  e.preventDefault();
+  
+  if (e.target.id === 'login-form') handleLogin($('#email').value, $('#pass').value);
+  if (e.target.id === 'signup-form') handleSignup($('#s-name').value, $('#s-username').value, $('#s-email').value, $('#s-pass').value);
+  
+  if (e.target.id === 'setup-profile-form') {
+    try { await updateDocById('users', session.uid, { name: $('#p-name').value, username: $('#p-username').value }); } 
+    catch(e) { toast(e.message, 'error'); }
+  }
+
+  if (e.target.id === 'join-group-form') {
+    const code = $('#j-code').value.trim().toUpperCase();
+    if (!code) return;
+    try {
+      const q = query(collection(db, "groups"), where("code", "==", code));
+      const snap = await getDocs(q);
+      if (snap.empty) return toast('That invite code is invalid or has expired.', 'error');
+      const groupId = snap.docs[0].id;
+      if (session.groupIds.includes(groupId)) return toast('You are already in this group!', 'error');
+      await updateDocById('users', session.uid, { groupIds: arrayUnion(groupId) });
+      closeModal(); await loadData(); toast('Joined group successfully!');
+    } catch (err) { toast(err.message, 'error'); }
+  }
+
+  if (e.target.id === 'create-group-form') {
+    const name = $('#g-name').value.trim();
+    if (!name) return;
+    try {
+      const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const groupId = await createDoc('groups', { name, code, creatorId: session.uid, date: new Date().toISOString() });
+      await updateDocById('users', session.uid, { groupIds: arrayUnion(groupId) });
+      closeModal(); await loadData(); toast(`Group created! Invite Code: ${code}`);
+    } catch (err) { toast(err.message, 'error'); }
+  }
+  
+  if (e.target.id === 'profile-form') {
+    try { 
+      await updateDocById('users', session.uid, { name: $('#pr-name').value, username: $('#pr-username').value });
+      toast('Profile updated'); 
+    } catch(e) { toast(e.message, 'error'); }
+  }
+});
+
+render();
+</script>
+</body>
+</html>
